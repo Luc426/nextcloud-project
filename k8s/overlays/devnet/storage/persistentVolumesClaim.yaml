@@ -1,0 +1,89 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - Production PersistentVolumeClaims:
+#     * The Web Site PVC
+#     * The User Data PVC
+#   - The Devnet PersistentVolumeClaims:
+#     * The Web Site PVC
+#     * The User Data PVC
+#     * The MariaDB Database PVC
+# Notes:
+#   - Uncomment MariaDB PVC only if you want to store data permanently
+#   - Production data are used to synchronize Devnet Data prior the deployment
+# ================================================
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: www-prod-for-devnet-rsync-pvc
+spec:
+  selector:
+    matchLabels:
+      storage: website-prod
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: userdata-prod-for-devnet-rsync-pvc
+spec:
+  selector:
+    matchLabels:
+      storage: data-prod
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: www-devnet-pvc
+spec:
+  selector:
+    # The PVC needs a PV with similar label:
+    matchLabels:
+      storage: website-devnet
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: userdata-devnet-pvc
+spec:
+  selector:
+    matchLabels:
+      storage: data-devnet
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: mariadb-devnet-pvc
+# spec:
+#   selector:
+#     matchLabels:
+#       tier: database
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 550M
+# ---

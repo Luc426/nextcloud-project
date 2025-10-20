@@ -1,0 +1,20 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - Headless Service to be used with the DNS record
+# ================================================
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+spec:
+  type: ClusterIP
+  ports:
+    - port: "${MARIADB_SVC_PORT}"
+      targetPort: "${MARIADB_PORT}"
+      protocol: TCP
+---

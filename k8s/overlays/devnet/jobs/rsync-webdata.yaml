@@ -1,0 +1,54 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - Rsync Job for syncing the web app from Prod to Devnet repository
+#
+# Notes:
+# The Sync phase of the Deployment continues only if the Job's Hook is succeeded
+# ================================================
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rsync-website
+spec:
+  template:
+    spec:
+      volumes:
+      # The Production Web PVC:
+      - name: webcontent-production
+        persistentVolumeClaim:
+          claimName: www-prod-for-devnet-rsync-pvc
+      # The Devnet Web PVC:
+      - name: webcontent-devnet
+        persistentVolumeClaim:
+          claimName: www-devnet-pvc
+      - name: config-php
+        configMap:
+          name: config-php
+      containers:
+      - name: rsync
+        image: alpine:latest
+        volumeMounts:
+        - name: webcontent-production
+          mountPath: /prod
+        - name: webcontent-devnet
+          mountPath: /devnet
+        - name: config-php
+          mountPath: /config/config.php
+          subPath: config.php
+        command: ["/bin/sh","-c"]
+        args:
+          - apk add --no-cache rsync && rsync -av --delete /prod/ /devnet/ --include='.*' && cp /config/config.php /devnet/config/config.php && chown 101:101 /devnet/config/config.php
+        resources:
+          limits:
+            cpu: "0.7"
+            memory: "500Mi"
+          requests:
+            cpu: "0.5"
+            memory: "300Mi"
+      restartPolicy: Never
+---

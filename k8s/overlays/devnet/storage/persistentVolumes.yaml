@@ -1,0 +1,97 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - Production PersistentVolumes:
+#     * The Web Site PV
+#     * The User Data PV
+#   - The Devnet PersistentVolumes:
+#     * The Web Site PV
+#     * The User Data PV
+#     * The MariaDB Database PV
+# Notes:
+#   - Uncomment MariaDB PV only if you want to store data permanently
+#   - Production data are used to synchronize Devnet Data prior the deployment
+# ================================================
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  # Prod Web Repository
+  name: www-prod-for-devnet-pv
+  labels:
+    storage: website-prod
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    # NFS server and path:
+    server: "${NFS_SERVER}"
+    path: "${NFS_WORKDIR}"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  # Prod Web Repository
+  name: userdata-prod-for-devnet-pv
+  labels:
+    storage: data-prod
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    # NFS server and path:
+    server: "${NFS_SERVER}"
+    path: "${NFS_WORKDIR}"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: www-devnet-pv
+  labels:
+    storage: website-devnet
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "${NFS_SERVER}"
+    path: "${NFS_WORKDIR}"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: userdata-devnet-pv
+  labels:
+    storage: data-devnet
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "${NFS_SERVER}"
+    path: "${NFS_WORKDIR}"
+---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: mariadb-data-pv
+#   labels:
+#     tier: database
+# spec:
+#   capacity:
+#     storage: 550M
+#   accessModes:
+#     - ReadWriteOnce
+#   nfs:
+#     server: "${NFS_SERVER}"
+#     path: "${NFS_WORKDIR}"
+# ---

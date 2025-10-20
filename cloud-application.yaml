@@ -1,0 +1,29 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - The Argo CD Nextcloud Production Application (main)
+#   - Activated SyncPolicy
+# ================================================
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nextcloud-main
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: "${GIT_REPO}"
+    path: k8s/overlays/prod
+    targetRevision: main
+  destination:
+    server: "${KUBERNETES_SERVER}"
+    namespace: "${PRODUCTION}"
+  syncPolicy:
+    automated: 
+      selfHeal: true
+      prune: true
+---

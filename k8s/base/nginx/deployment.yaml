@@ -1,0 +1,93 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - The Nginx Deployment:
+#     * The Nginx initConainter
+#     * The Nginx container
+# Notes: 
+#   - The InitContainer mounts the template file, replace the placeholders
+#   with the actual values of these variables, then store the new file in an
+#   empty shared volume accessible to the Pod.
+# ================================================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  template:
+    metadata:
+    spec:
+      volumes:
+      - name: nginx-template
+        configMap:
+          name: nginx-conf-template
+      - name: server-config
+        configMap:
+          name: nginx-default-server
+      - name: nginx-config
+        emptyDir: {}
+      - name: webcontent
+        persistentVolumeClaim:
+          claimName: www-production-pvc
+      - name: user-data
+        persistentVolumeClaim:
+          claimName: userdata-production-pvc
+      initContainers:
+      - name: init-nginx
+        image: alpine:latest
+        env:
+        - name: PHP_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: PHP_SERVER
+        - name: PHP_PORT
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: PHP_PORT
+        - name: KUBE_NETWORK
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: KUBE_NETWORK
+        command: ["/bin/sh","-c"]
+        args:
+          - apk add --no-cache gettext && envsubst '${PHP_SERVER} ${PHP_PORT} ${KUBE_NETWORK}' < /template/nginx.conf.template > /config/nginx.conf
+        volumeMounts:
+        - name: nginx-template
+          mountPath: /template/nginx.conf.template
+          subPath: nginx.conf.template
+        - name: nginx-config
+          mountPath: /config
+      containers:
+      - name: nginx
+        image: "${NGINX_DOCKERIMAGE}"
+        securityContext:
+          allowPrivilegeEscalation: false
+        imagePullPolicy: Always
+        ports:
+        - containerPort: "${NGINX_PORT}"
+        volumeMounts:
+        - name: webcontent
+          mountPath: "/usr/share/nginx/html"
+        - name: user-data 
+          mountPath: "/mnt"
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          readOnly: true
+        - name: server-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: gitcred
+---

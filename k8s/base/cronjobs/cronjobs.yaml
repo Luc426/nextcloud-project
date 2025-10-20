@@ -1,0 +1,94 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description :
+#   This manifest contains the following configurations:
+#   - The Cron CronJob:
+#     * The CronJob initContainer
+#     * The CronJob for Nextcloud
+# Notes: 
+#   - The InitContainer mounts the template file, replace the placeholders
+#   with the actual values of these variables, then store the new file in an
+#   empty shared volume accessible to the Pod.
+# ================================================
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron
+spec:
+  schedule: "*/5 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          volumes:
+          - name: php-template
+            configMap:
+              name: nextcloud-php-template 
+          - name: php-config
+            emptyDir: {}
+          - name: fpm-config
+            configMap:
+              name: nextcloud-fpm-config
+          - name: webcontent
+            persistentVolumeClaim:
+              claimName: www-production-pvc
+          - name: user-data
+            persistentVolumeClaim:
+              claimName: userdata-production-pvc
+          initContainers:
+          - name: init-php
+            image: alpine:latest
+            envFrom:
+              - secretRef:
+                  name: cloud-secrets
+            command: ["/bin/sh","-c"]
+            args:
+              - apk add --no-cache gettext && envsubst < /template/nextcloud.ini.template > /config/nextcloud.ini
+            volumeMounts:
+            - name: php-template
+              mountPath: /template/nextcloud.ini.template
+              subPath: nextcloud.ini.template
+            - name: php-config
+              mountPath: /config
+          containers:
+          - name: cron
+            image: "${PHP_DOCKERIMAGE}"
+            envFrom:
+              - secretRef:
+                  name: cloud-secrets
+            # User is created inside the container if it does not exist:
+            securityContext: 
+              runAsUser: "${APP_USER}"
+              runAsGroup: "${APP_USER}" 
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+            imagePullPolicy: IfNotPresent
+            command:
+            - /usr/local/bin/php
+            - /usr/share/nginx/html/cron.php
+            volumeMounts:
+            - name: webcontent
+            # Path created using the Dockerfile:
+              mountPath: "/usr/share/nginx/html"
+            - name: user-data 
+              # Consistent with the location designated in config.php:
+              mountPath: "/mnt"
+              # The file is created or overwritten: 
+            - name: php-config
+              mountPath: /usr/local/etc/php/conf.d/nextcloud.ini
+              subPath: nextcloud.ini
+              readOnly: true
+            - name: fpm-config
+              mountPath: /usr/local/etc/php-fpm.d/www.conf
+              subPath: www.conf
+              readOnly: true
+          dnsPolicy: ClusterFirst
+          restartPolicy: Never
+          imagePullSecrets:
+          - name: gitcred
+---

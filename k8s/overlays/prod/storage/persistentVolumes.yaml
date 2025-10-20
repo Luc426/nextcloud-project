@@ -1,0 +1,57 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - The Production PersistentVolumes:
+#     * The Web Site PV
+#     * The User Data PV
+#     * The MariaDB Database PV
+# ================================================
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: www-production-pv
+  labels:
+    storage: website
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "${NFS_SERVER}"
+    path: "${NFS_WORKDIR}"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: userdata-production-pv
+  labels:
+    storage: data
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "${NFS_SERVER}" 
+    path: "${NFS_WORKDIR}"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-mariadb-data
+  labels:
+    tier: database
+spec:
+  capacity:
+    storage: 550M
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    server: "${NFS_SERVER}"
+    path: "${NFS_WORKDIR}"
+---

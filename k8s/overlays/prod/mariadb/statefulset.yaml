@@ -1,0 +1,61 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - The MariaDB StatefulSet
+# Notes:
+#   Env variables are required only before the first deployment of the database
+# ================================================
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+spec:
+  serviceName: "mariadb"
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:11.4 # Recommended by Nextcloud
+        ports:
+        - containerPort: "${MARIADB_PORT}"
+          name: mariadb-port
+        env:
+        - name: MYSQL_RANDOM_ROOT_PASSWORD
+          value: "yes"
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: MYSQL_PASSWORD
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql/
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      selector:
+        matchLabels:
+          app: cloud
+          env: prod
+          tier: database
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 550M
+---

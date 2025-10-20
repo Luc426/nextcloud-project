@@ -1,0 +1,33 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - The Redis Deployment
+# ================================================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: REDIS_PASSWORD
+        ports:
+        - containerPort: "${REDIS_PORT}"
+        command: ["/bin/sh"]
+        args: ["-c", "redis-server - requirepass $REDIS_PASSWORD"]
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+---

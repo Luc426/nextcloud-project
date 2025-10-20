@@ -1,0 +1,93 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - The Devnet MariaDB Deployment:
+#     * The MariaDB initConainter
+#     * The MariaDB container
+# Notes: 
+#   The InitContainer saves the Production Database in a empty shared volume
+#   then the Pod mounts the '.sql' file into the Docker DB entrypoint.
+# ================================================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+spec:
+  replicas: 1
+  template:
+    spec:
+      restartPolicy: Always
+      volumes:
+      - name: dump-repository
+        emptyDir: {}
+      # Keep or not data in the PV:
+      # - name: data-devnet
+      #   persistentVolumeClaim:
+      #     claimName: mariadb-devnet
+      initContainers:
+      - name: mysqldump
+        image: mysql:latest
+        env:
+        - name: MYSQL_RANDOM_ROOT_PASSWORD
+          value: "yes"
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: MYSQL_USER
+        # MySQL automatically detects this variable name for password parameter "-p":
+        - name: MYSQL_PWD
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: MYSQL_PASSWORD
+        - name: MYSQL_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: mysqldump-secret
+              key: MYSQL_PROD_SERVER
+        volumeMounts:
+        - name: dump-repository
+          mountPath: /backup
+        command: ["/bin/sh","-c"]
+        args:
+          - mysqldump --single-transaction -h ${MYSQL_SERVER} -u ${MYSQL_USER} ${MYSQL_DATABASE} > /backup/nextcloud.sql
+      containers:
+      - name: mariadb
+        image: mariadb:11.4 # Recommended by Nextcloud
+        ports:
+        - containerPort: "${MARIADB_PORT}"
+        env:
+        - name: MYSQL_RANDOM_ROOT_PASSWORD
+          value: "yes"
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: MYSQL_PASSWORD
+        volumeMounts:
+        - name: dump-repository
+          mountPath: /docker-entrypoint-initdb.d
+        # Keep or not data in the PV:
+        # - name: data-devnet
+        #   mountPath: /var/lib/mysql
+---

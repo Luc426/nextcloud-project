@@ -1,0 +1,73 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - The ConfigMaps:
+#     * The config.php file
+#
+# Notes:
+#   - This file is used by Rsync Job before the Devnet Deployment
+# ================================================
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-php
+data:
+  config.php: |
+    <?php
+    $CONFIG = array (
+      'trusted_domains' => 
+      array (
+        0 => 'cloud.lumitek.local',
+      ),
+      'dbtype' => 'mysql',
+      'dbname' => getenv('MYSQL_DATABASE'),
+      'dbuser' => getenv('MYSQL_USER'),
+      'dbpassword' => getenv('MYSQL_PASSWORD'),
+      'dbport' => '',
+      'dbhost' => getenv('MYSQL_SERVER'),
+      'overwrite.cli.url' => 'https://cloud.lumitek.local',
+      'overwritehost' => 'cloud.lumitek.local',
+      'htaccess.RewriteBase' => '/',
+      'overwriteprotocol' => 'https',
+      'allow_user_to_change_display_name' => true,
+      'maintenance_window_start' => 1,
+      'log_type' => 'file',
+      'logfile' => '/var/log/nextcloud.log',
+      'loglevel' => 2,
+      'logtimezone' => 'Europe/Paris',
+      'trusted_proxies' => 
+      array (
+        0 => getenv('KUBE_NETWORK'),
+        1 => getenv('LOCAL_NETWORK'),
+      ),
+      'forwarded_for_headers' => 
+      array (
+        0 => 'HTTP_X_FORWARDED_FOR',
+      ),
+      'maintenance' => false,
+      'filelocking.enabled' => true,
+      'memcache.local' => '\\OC\\Memcache\\APCu',
+      'memcache.distributed' => '\\OC\\Memcache\\Redis',
+      'memcache.locking.timeout' => 10,
+      'memcache.locking' => '\\OC\\Memcache\\Redis',
+      'redis' =>
+      array (
+        'host' => getenv('REDIS_SERVER'),
+        'port' => getenv('REDIS_PORT'),
+        'timeout' => 1.5,
+        'ttl' => 3600,
+        'password' => getenv('REDIS_PASSWORD'),
+        'dbindex' => 0,
+      ),
+      'instanceid' => getenv('NEXTCLOUD_INSTANCEID'),
+      'passwordsalt' => getenv('NEXTCLOUD_PASSWORDSALT'),
+      'secret' => getenv('NEXTCLOUD_SECRET'),
+      'dbtableprefix' => 'oc_',
+      'installed' => true,
+      'theme' => '',
+    );
+---

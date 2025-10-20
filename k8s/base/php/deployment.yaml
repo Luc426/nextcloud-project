@@ -1,0 +1,110 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - The PHP-FPM Deployment:
+#     * The PHP initConainter
+#     * The PHP container
+# Notes: 
+#   - The InitContainer mounts the template file, replace the placeholders
+#   with the actual values of these variables, then store the new file in an
+#   empty shared volume accessible to the Pod.
+# ================================================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php
+spec:
+  replicas: 2
+  template:
+    metadata:
+    spec:
+      volumes:
+      - name: php-template
+        configMap:
+          name: nextcloud-php-template 
+      - name: fpm-config
+        configMap:
+          name: nextcloud-fpm-config
+      - name: php-config
+        emptyDir: {}
+      - name: webcontent
+        persistentVolumeClaim:
+          claimName: www-production-pvc
+      - name: user-data
+        persistentVolumeClaim:
+          claimName: userdata-production-pvc
+      initContainers:
+      - name: init-php
+        image: alpine:latest
+        env:
+        - name: REDIS_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: REDIS_SERVER
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: REDIS_PORT
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: REDIS_PASSWORD
+        command: ["/bin/sh","-c"]
+        args:
+          - apk add --no-cache gettext && envsubst < /template/nextcloud.ini.template > /config/nextcloud.ini
+        volumeMounts:
+        - name: php-template
+          mountPath: /template/nextcloud.ini.template
+          subPath: nextcloud.ini.template
+        - name: php-config
+          mountPath: /config
+      containers:
+      - name: php
+        image: "${PHP_DOCKERIMAGE}"
+        envFrom:
+          - secretRef:
+              name: cloud-secrets
+        # User is created inside the container if it does not exist:
+        securityContext: 
+          runAsUser: "${APP_USER}"
+          runAsGroup: "${APP_USER}"
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1.5"
+            memory: "4Gi"
+          requests:
+            cpu: "0.5"
+            memory: "300Mi"
+        ports:
+        - containerPort: "${PHP_PORT}"
+        volumeMounts:
+        # Path created using the Dockerfile:
+        - name: webcontent
+          mountPath: "/usr/share/nginx/html"
+          # Consistent with the location designated in config.php:
+        - name: user-data 
+          mountPath: "/mnt"
+          # The file is created or overwritten:
+        - name: php-config
+          mountPath: /usr/local/etc/php/conf.d/nextcloud.ini
+          subPath: nextcloud.ini
+          readOnly: true
+        - name: fpm-config
+          mountPath: /usr/local/etc/php-fpm.d/www.conf
+          subPath: www.conf
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: gitcred
+---

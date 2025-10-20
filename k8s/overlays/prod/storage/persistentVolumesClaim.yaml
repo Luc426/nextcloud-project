@@ -1,0 +1,45 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - The Production PersistentVolumeClaims:
+#     * The Web Site PVC
+#     * The User Data PVC
+# Notes:
+#   The MariaDB Database creates its own PVC during deployment
+# ================================================
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: www-production-pvc
+spec:
+  selector:
+    matchLabels:
+      app: cloud
+      env: prod
+      storage: website
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: userdata-production-pvc
+spec:
+  selector:
+    matchLabels:
+      app: cloud
+      env: prod
+      storage: data
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+---

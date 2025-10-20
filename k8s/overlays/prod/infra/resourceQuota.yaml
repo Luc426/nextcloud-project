@@ -1,0 +1,40 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - LimitRange for the containers default configuration
+#   - ResourceQuota fot the whole namespace
+# ================================================
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+spec:
+  limits:
+  - type: Container
+    default:        # What applies if you don't put anything
+      cpu: "0.5"
+      memory: "512Mi"
+    defaultRequest: # What applies if you don't put anything
+      cpu: "0.25"
+      memory: "100Mi"
+    max:            # Do not exceed this level
+      cpu: "2"
+      memory: "4Gi"
+    min:            # Do not go below this level
+      cpu: "0.1"
+      memory: "30Mi"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: cloud-quota
+spec:
+  # max CPU and RAM reserved for this namespace:
+  hard:
+    requests.cpu: "2.5"
+    requests.memory: "4.5Gi"
+---

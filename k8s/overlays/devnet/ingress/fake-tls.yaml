@@ -1,0 +1,34 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-08-15
+# Description:
+#   This manifest contains the following configurations:
+#   - Ingress for the HTTPS routing
+# ================================================
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cloud-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+      - cloud.lumitek.local
+      secretName: fake-lumitek-tls
+  ingressClassName: nginx
+  rules:
+  # The DNS record needs to be created and available on the network:
+  - host: cloud.lumitek.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: nginx
+            port:
+              number: 80 # The Service is listenning on the HTTP port
+        path: /
+        pathType: Prefix
+---

@@ -28,7 +28,7 @@ spec:
           service:
             name: nginx
             port:
-              number: 80 # The Service is listenning on the HTTP port
+              number: "${NGINX_SVC_PORT}" # The Service is listenning on the HTTP port
         path: /
         pathType: Prefix
 ---

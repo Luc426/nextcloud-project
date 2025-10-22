@@ -27,7 +27,7 @@ spec:
           service:
             name: nginx
             port:
-              number: 80
+              number: "${NGINX_SVC_PORT}"
         path: /
         pathType: Prefix
 ---

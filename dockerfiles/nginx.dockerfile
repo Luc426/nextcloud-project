@@ -1,6 +1,6 @@
 FROM nginx:alpine
 
-# Donner accès aux répertoires nécessaires
+# Create repositories for non-root user
 RUN mkdir -p /var/cache/nginx /var/log/nginx \
     && chown -R nginx:nginx /var/cache/nginx /var/log/nginx /usr/share/nginx/html
 

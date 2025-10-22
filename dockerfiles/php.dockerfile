@@ -1,12 +1,12 @@
 FROM php:8.3-fpm-alpine
 
-# Correspondance du dossier web avec la conf web nginx par défaut
+# Nginx and PHP require the same web repository absolute path:
 RUN mkdir -p /usr/share/nginx/html
 
 ENV OLDPWD=/usr/share/nginx/html
 WORKDIR /usr/share/nginx/html
 
-# Installer les libs de build requises temporaires pour les extensions PHP 
+# Install temporary build libs required by PHP extensions: 
 RUN apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         git \
@@ -31,7 +31,7 @@ RUN apk add --no-cache --virtual .build-deps \
         oniguruma-dev \
         postgresql-dev
 
-# Installer les runtimes système requis pour les extensions PHP 
+# Install system runtimes for PHP extensions: 
 RUN apk add --no-cache \
     aom-libs \
     avahi-libs \
@@ -136,7 +136,7 @@ RUN apk add --no-cache \
     tiff \
     x265-libs
     
-# Configurer GD avec freetype + jpeg
+# Configur GD using freetype + jpeg:
 RUN docker-php-ext-configure gd \
         --with-freetype \
         --with-jpeg \
@@ -166,10 +166,10 @@ RUN docker-php-ext-configure gd \
         xml \
         curl
 
-# Installer extensions PECL
+# Install PECL extensions :
 RUN pecl install redis imagick apcu smbclient \
     && docker-php-ext-enable redis imagick apcu smbclient
 
-# Nettoyer les dépendances de build (alléger l'image)
+# Clean build dependances and lighten the final Docker image:
 RUN apk del .build-deps \
     && rm -rf /var/cache/apk/* /tmp/pear ~/.pearrc

@@ -1,0 +1,27 @@
+# penser au service qui se connecte à mariadb et qui dump---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-policy
+spec:
+  # Completed by the includeSelectors parameter + required label: 
+  podSelector:
+    matchLabels:
+      tier: redis
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: backend
+    ports:
+      - protocol: TCP
+        port: "${REDIS_PORT}"
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: backend
+---

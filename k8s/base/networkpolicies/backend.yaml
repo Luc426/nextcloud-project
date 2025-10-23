@@ -1,0 +1,44 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-policy
+spec:
+  # Completed by the includeSelectors parameter + required label:
+  podSelector:
+    matchLabels:
+      tier: backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: frontend
+    ports:
+      - protocol: TCP
+        port: "${PHP_PORT}"
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: redis
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: frontend
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: database
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+  - ports:
+      - protocol: TCP
+        port: 53
+      - protocol: UDP
+        port: 53
+---

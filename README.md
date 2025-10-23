@@ -40,6 +40,12 @@ nextcloud-project/
 │   │   │   ├── cronjobs.yaml
 │   │   │   └── kustomization.yaml
 │   │   ├── kustomization.yaml
+│   │   ├── networkpolicies
+│   │   │   ├── backend.yaml
+│   │   │   ├── database.yaml
+│   │   │   ├── frontend.yaml
+│   │   │   ├── kustomization.yaml
+│   │   │   └── redis.yaml
 │   │   ├── nginx
 │   │   │   ├── config
 │   │   │   │   ├── default.conf

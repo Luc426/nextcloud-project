@@ -1,0 +1,23 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-policy
+spec:
+  # Completed by the includeSelectors parameter + required label: 
+  podSelector:
+    matchLabels:
+      tier: frontend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: "${NGINX_PORT}"
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: backend
+---

@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: database-policy
+spec:
+  # Completed by the includeSelectors parameter + required label: 
+  podSelector:
+    matchLabels:
+      tier: database
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: backend
+    ports:
+      - protocol: TCP
+        port: "${MARIADB_PORT}"
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: backend
+---

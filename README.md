@@ -5,14 +5,14 @@ Pour garantir un apprentissage solide de Kubernetes, j'ai choisi d'écrire chaqu
 à la main plutôt que l'installation semi-automatisée avec Helm.
 
 ## Déploiement multi-environnement
-Le code permet à Argo CD de déployer le serveur dans un environnement de production.
-Au besoin, il permet également dupliquer le serveur dans un environnement de développement pour tester des mises à jour, des paramétrages de performance ou des montées de version.
+Le code est livré avec deux objets de type Application permettant à Argo CD de déployer au besoin le serveur dans un environnement de production ou de développement.  
+L'environnement de développement (Devnet) permet de dédoubler le serveur de production dans un espace de nom dédié pour tester des mises à jour, des paramétrages de performance ou des montées de version sans impacter la production, et au plus près de sa configuration, sans persistence des données.
 
 ## Technologies utilisées
 
-- PHP, MariaDB, Redis, Nginx, SealedSecrets, 
-- Docker, Git, GitHub Actions et GitHub Packages (Partie CI)
-- Kubernetes (PV, PVC), Kustomize, Argo CD (Partie CD), Hooks
+- PHP, MariaDB, Redis, Nginx, SealedSecrets   
+- Docker, Git, GitHub Actions et GitHub Packages (Partie CI)  
+- Kubernetes (PV, PVC, NetworkPolicy, Ingress), Kustomize, Argo CD, Hooks (Partie CD)  
 
 ## Liens utiles
 

@@ -10,7 +10,7 @@ L'environnement de développement (Devnet) permet de dédoubler le serveur de pr
 
 ## Technologies utilisées
 
-- PHP, MariaDB, Redis, Nginx, SealedSecrets   
+- PHP, MariaDB, Redis, Nginx, SealedSecrets, Prometheus, Grafana, Helm, ServiceMonitor   
 - Docker, Git, GitHub Actions et GitHub Packages (Partie CI)  
 - Kubernetes (PV, PVC, NetworkPolicy, Ingress), Kustomize, Argo CD, Hooks (Partie CD)  
 

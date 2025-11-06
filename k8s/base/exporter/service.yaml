@@ -1,0 +1,24 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-11-06
+# Description:
+#   This manifest contains the following configurations:
+#   - The Nextcloud Exporter Service:
+# Notes: 
+#   - A ServiceMonitor object is deployed outside the project repository
+#   - Use a private Nextcloud API token
+# ================================================
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-exporter
+spec:
+  ports:
+    - name: metrics
+      port: "${EXPORTER_SVC_PORT}"
+      targetPort: "${EXPORTER_PORT}"
+  selector:
+    app: nextcloud-exporter
+---

@@ -1,0 +1,45 @@
+# ================================================
+# Kubernetes Manifest for the Nextcloud Project
+# Author   : Lumitek
+# Date     : 2025-11-06
+# Description:
+#   This manifest contains the following configurations:
+#   - The Nextcloud Exporter Deployment:
+# Notes: 
+#   - A ServiceMonitor object is deployed outside the project repository
+#   - Use a private Nextcloud API token
+# ================================================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-exporter
+spec:
+  replicas: 1
+  template:
+    metadata:
+    spec:
+      containers:
+        - name: exporter
+          image: xperimental/nextcloud-exporter:latest
+          env:
+          - name: NEXTCLOUD_SERVER
+            valueFrom:
+              secretKeyRef:
+                name: cloud-secrets
+                key: NEXTCLOUD_SERVER
+          - name: NEXTCLOUD_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: cloud-secrets
+                key: NEXTCLOUD_AUTH_TOKEN
+          - name: NEXTCLOUD_INFO_APPS
+            value: "true"
+          - name: NEXTCLOUD_INFO_UPDATE
+            value: "true"
+          - name: NEXTCLOUD_TLS_SKIP_VERIFY
+            value: "false"
+          ports:
+            - containerPort: 9205
+              name: metrics
+---

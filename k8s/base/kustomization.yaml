@@ -6,3 +6,5 @@ resources:
 - php/
 - redis/
 - cronjobs/
+- networkpolicies/
+- exporter/

@@ -39,6 +39,10 @@ nextcloud-project/
 │   │   ├── cronjobs
 │   │   │   ├── cronjobs.yaml
 │   │   │   └── kustomization.yaml
+│   │   ├── exporter
+│   │   │   ├── deployment.yaml
+│   │   │   ├── kustomization.yaml
+│   │   │   └── service.yaml
 │   │   ├── kustomization.yaml
 │   │   ├── networkpolicies
 │   │   │   ├── backend.yaml

@@ -40,6 +40,6 @@ spec:
           - name: NEXTCLOUD_TLS_SKIP_VERIFY
             value: "false"
           ports:
-            - containerPort: 9205
+            - containerPort: "${EXPORTER_PORT}"
               name: metrics
 ---

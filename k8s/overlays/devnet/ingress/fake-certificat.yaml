@@ -13,6 +13,6 @@ data:
   tls.key: "${HTTPS_PRIVATE_KEY}"
 kind: Secret
 metadata:
-  name: fake-tls.yaml
+  name: fake-lumitek-tls
 type: kubernetes.io/tls
 ---
